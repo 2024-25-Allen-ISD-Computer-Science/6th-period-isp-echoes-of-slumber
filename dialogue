@@ -1,0 +1,59 @@
+import pygame
+import sys
+
+pygame.init()
+
+# screen setup
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Game")
+
+# font setup
+dialogueFont = pygame.font.Font(None, 36)
+
+# temp color setup
+WHITE = (255, 255, 255)
+BLUE = (0, 0, 255)
+BLACK = (0, 0, 0)
+
+# character setup
+character_rect = pygame.Rect(300, 200, 100, 150)
+
+# dialogue setup
+show_dialogue = False
+dialogue_text = "Test"
+
+# main loop
+clock = pygame.time.Clock()
+running = True
+while running:
+    screen.fill(WHITE)
+
+    # drawing the character
+    pygame.draw.rect(screen, BLUE, character_rect)
+
+    # user interaction
+    # if user quits the game, stop clock
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        # if character is clicked, show dialogue
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if character_rect.collidepoint(event.pos):
+                show_dialogue = True
+
+    if show_dialogue:
+            dialogue_box = pygame.Rect(150, 400, 500, 100)  # box dimensions
+            pygame.draw.rect(screen, BLACK, dialogue_box)
+            pygame.draw.rect(screen, WHITE, dialogue_box.inflate(-10, -10))  # inner border
+            text_surface = dialogueFont.render(dialogue_text, True, BLACK)
+            screen.blit(text_surface, (dialogue_box.x + 20, dialogue_box.y + 30))
+    
+    # update display
+    pygame.display.flip()
+    # set tick/framerate
+    clock.tick(60)
+
+
+
+
