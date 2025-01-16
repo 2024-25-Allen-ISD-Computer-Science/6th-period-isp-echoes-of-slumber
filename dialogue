@@ -4,7 +4,7 @@ import sys
 pygame.init()
 
 # screen setup
-WIDTH, HEIGHT = 800, 600
+WIDTH, HEIGHT = 1375, 700
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Game")
 
@@ -17,11 +17,22 @@ BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
 
 # character setup
-character_rect = pygame.Rect(300, 200, 100, 150)
+shopkeeperSprite = pygame.image.load("shopkeeperSprite.png")
+shopkeeperSprite = pygame.transform.scale(shopkeeperSprite, (190, 250))
+characterRect = shopkeeperSprite.get_rect(topleft=(300, 200))
 
 # dialogue setup
+dialogue_text = "Would you like to purchase something?"
+# holds what text is currently displayed
+current_text = ""
+# tracks # of characters to display
+text_index = 0
+# num of frames between each character's appearance
+typing_speed = 3
+typing_counter = 0
+
 show_dialogue = False
-dialogue_text = "Test"
+
 
 # main loop
 clock = pygame.time.Clock()
@@ -30,7 +41,7 @@ while running:
     screen.fill(WHITE)
 
     # drawing the character
-    pygame.draw.rect(screen, BLUE, character_rect)
+    screen.blit(shopkeeperSprite, characterRect)
 
     # user interaction
     # if user quits the game, stop clock
@@ -39,14 +50,26 @@ while running:
             running = False
         # if character is clicked, show dialogue
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if character_rect.collidepoint(event.pos):
+            if characterRect.collidepoint(event.pos):
                 show_dialogue = True
+                # reset displayed text
+                current_text = ""
+                text_index = 0
+                typing_counter = 0
 
     if show_dialogue:
-            dialogue_box = pygame.Rect(150, 400, 500, 100)  # box dimensions
+            dialogue_box = pygame.Rect(150, 450, 500, 100)  # box dimensions
             pygame.draw.rect(screen, BLACK, dialogue_box)
             pygame.draw.rect(screen, WHITE, dialogue_box.inflate(-10, -10))  # inner border
-            text_surface = dialogueFont.render(dialogue_text, True, BLACK)
+
+            # text animation
+            if text_index < len(dialogue_text):
+                 typing_counter += 1
+                 if typing_counter % typing_speed == 0:
+                      text_index += 1
+                      current_text = dialogue_text[:text_index]
+            
+            text_surface = dialogueFont.render(current_text, True, BLACK)
             screen.blit(text_surface, (dialogue_box.x + 20, dialogue_box.y + 30))
     
     # update display
