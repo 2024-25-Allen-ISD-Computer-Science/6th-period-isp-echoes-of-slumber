@@ -9,7 +9,7 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Game")
 
 # font setup
-dialogueFont = pygame.font.Font(None, 36)
+dialogueFont = pygame.font.Font("januaryNight/januaryNight.ttf", 36)
 
 # temp color setup
 WHITE = (255, 255, 255)
@@ -59,8 +59,8 @@ while running:
 
     if show_dialogue:
             dialogue_box = pygame.Rect(150, 450, 500, 100)  # box dimensions
-            pygame.draw.rect(screen, BLACK, dialogue_box)
-            pygame.draw.rect(screen, WHITE, dialogue_box.inflate(-10, -10))  # inner border
+            pygame.draw.rect(screen, (92, 95, 127), dialogue_box)
+            pygame.draw.rect(screen, (202, 211, 228), dialogue_box.inflate(-10, -10))  # inner border
 
             # text animation
             if text_index < len(dialogue_text):
@@ -69,8 +69,8 @@ while running:
                       text_index += 1
                       current_text = dialogue_text[:text_index]
             
-            text_surface = dialogueFont.render(current_text, True, BLACK)
-            screen.blit(text_surface, (dialogue_box.x + 20, dialogue_box.y + 30))
+            text_surface = dialogueFont.render(current_text, True, (115, 98, 86))
+            screen.blit(text_surface, (dialogue_box.x + 20, dialogue_box.y + 35))
     
     # update display
     pygame.display.flip()
