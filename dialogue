@@ -21,13 +21,19 @@ BLACK = (0, 0, 0)
 characterSpeed = 10
 
 # character setup
-mainSprite = pygame.image.load("mainSprite.png")
-mainSprite = pygame.transform.scale(mainSprite, (250, 250))
-mainRect = mainSprite.get_rect(topleft=(screenWidth/2 - 125, screenHeight/2 - 125))
 shopkeeperSprite = pygame.image.load("shopkeeperSprite.png")
 shopkeeperSprite = pygame.transform.scale(shopkeeperSprite, (190, 250))
 shopkeeperRect = shopkeeperSprite.get_rect(topleft=(300, 200))
 shopkeeperHeadshot = pygame.transform.scale(pygame.image.load("shopkeeperHeadshot.png"), (100, 100))
+
+character_images = {
+     "idle": pygame.transform.scale(pygame.image.load("mainSprite.png"), (250, 250)),
+     "walk_right": pygame.transform.scale(pygame.image.load("characterRightProfile.png"), (250, 250)),
+     "walk_left": pygame.transform.scale(pygame.image.load("characterLeftProfile.png"), (250, 250))
+}
+
+mainSprite = character_images["idle"]
+mainRect = mainSprite.get_rect(topleft=(screenWidth/2 - 125, screenHeight/2 - 125))
 
 # dialogue setup
 dialogue_text = "Would you like to purchase something?"
@@ -45,6 +51,8 @@ show_dialogue = False
 # main loop
 clock = pygame.time.Clock()
 running = True
+current_direction = "idle"
+
 while running:
     screen.fill(WHITE)
 
@@ -67,14 +75,26 @@ while running:
                 typing_counter = 0
         # if right/left/up/down is clicked, character will move
         keys = pygame.key.get_pressed()
+        moving = False
+
         if keys[pygame.K_LEFT] or keys[pygame.K_a]:
             mainRect.x -= characterSpeed
+            current_direction = "walk_left"
+            moving = True
         if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
             mainRect.x += characterSpeed
+            current_direction = "walk_right"
+            moving = True
         if keys[pygame.K_UP] or keys[pygame.K_w]:
             mainRect.y -= characterSpeed
+            moving = True
         if keys[pygame.K_DOWN] or keys[pygame.K_s]:
             mainRect.y += characterSpeed
+            current_direction = "idle"
+            moving = True
+
+        # change sprite based on key pressed
+        mainSprite = character_images[current_direction] if moving else character_images[current_direction]
 
     if show_dialogue:
             dialogue_box = pygame.Rect(screenWidth // 2 - 300, screenHeight * (4/5), 600, 100)  # box dimensions
