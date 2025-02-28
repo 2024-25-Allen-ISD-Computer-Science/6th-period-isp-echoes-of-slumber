@@ -12,11 +12,15 @@ pygame.display.set_caption("Game")
 
 # font setup
 dialogueFont = pygame.font.Font("januaryNight/januaryNight.ttf", 36)
+promptFont = pygame.font.Font("januaryNight/januaryNight.ttf", 28)
 
 # temp color setup
 WHITE = (255, 255, 255)
 BLUE = (0, 0, 255)
 BLACK = (0, 0, 0)
+
+buttonColor = (220, 220, 250)
+buttonHover = (180, 180, 250)
 
 characterSpeed = 10
 
@@ -46,7 +50,14 @@ typing_speed = 3
 typing_counter = 0
 
 show_dialogue = False
+show_prompt = False  # show "Talk (F)" prompt
 
+# proximity detection range
+interaction_distance = 150  
+
+# yes/no buttons for shopkeeper's store
+yes_rect = pygame.Rect(screenWidth // 2 - 150, screenHeight * (4 / 5) + 90, 100, 50)
+no_rect = pygame.Rect(screenWidth // 2 + 50, screenHeight * (4 / 5) + 90, 100, 50)
 
 # main loop
 clock = pygame.time.Clock()
@@ -60,57 +71,100 @@ while running:
     screen.blit(shopkeeperSprite, shopkeeperRect)
     screen.blit(mainSprite, mainRect)
 
+
+    # check proximity
+    distance = pygame.math.Vector2(mainRect.center).distance_to(shopkeeperRect.center)
+    # show prompt only if not already in dialogue
+    show_prompt = distance < interaction_distance and not show_dialogue  
+
+    mouse_pos = pygame.mouse.get_pos()
+
     # user interaction
     # if user quits the game, stop clock
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        # if character is clicked, show dialogue
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if shopkeeperRect .collidepoint(event.pos):
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if show_dialogue:
+                if yes_rect.collidepoint(mouse_pos):
+                    print("Player chose YES")
+                    show_dialogue = False  # Close dialogue after selection
+                elif no_rect.collidepoint(mouse_pos):
+                    print("Player chose NO")
+                    show_dialogue = False  # Close dialogue after selection
+            elif show_prompt and shopkeeperRect.collidepoint(mouse_pos):
                 show_dialogue = True
-                # reset displayed text
                 current_text = ""
                 text_index = 0
                 typing_counter = 0
+        # # if character is clicked, show dialogue
+        # if event.type == pygame.MOUSEBUTTONDOWN:
+        #     if shopkeeperRect .collidepoint(event.pos):
+        #         show_dialogue = True
+        #         # reset displayed text
+        #         current_text = ""
+        #         text_index = 0
+        #         typing_counter = 0
         # if right/left/up/down is clicked, character will move
-        keys = pygame.key.get_pressed()
-        moving = False
+    keys = pygame.key.get_pressed()
+    moving = False
 
-        if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-            mainRect.x -= characterSpeed
-            current_direction = "walk_left"
-            moving = True
-        if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-            mainRect.x += characterSpeed
-            current_direction = "walk_right"
-            moving = True
-        if keys[pygame.K_UP] or keys[pygame.K_w]:
-            mainRect.y -= characterSpeed
-            moving = True
-        if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-            mainRect.y += characterSpeed
-            current_direction = "idle"
-            moving = True
+    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
+        mainRect.x -= characterSpeed
+        current_direction = "walk_left"
+        moving = True
+    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
+        mainRect.x += characterSpeed
+        current_direction = "walk_right"
+        moving = True
+    if keys[pygame.K_UP] or keys[pygame.K_w]:
+        mainRect.y -= characterSpeed
+        moving = True
+    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
+        mainRect.y += characterSpeed
+        current_direction = "idle"
+        moving = True
 
-        # change sprite based on key pressed
-        mainSprite = character_images[current_direction] if moving else character_images[current_direction]
+    # change sprite based on key pressed
+    mainSprite = character_images[current_direction] if moving else character_images[current_direction]
+
+    # press 'F' to interact
+    if keys[pygame.K_f] and show_prompt:
+        show_dialogue = True
+        current_text = ""
+        text_index = 0
+        typing_counter = 0
+
+    # display "Talk (F)" prompt if near shopkeeper
+    if show_prompt:
+        prompt_text = promptFont.render("Talk (F)", True, BLACK)
+        prompt_rect = prompt_text.get_rect(midtop=(shopkeeperRect.centerx, shopkeeperRect.top - 20))
+        screen.blit(prompt_text, prompt_rect)
 
     if show_dialogue:
-            dialogue_box = pygame.Rect(screenWidth // 2 - 300, screenHeight * (4/5), 600, 100)  # box dimensions
-            pygame.draw.rect(screen, (92, 95, 127), dialogue_box)
-            pygame.draw.rect(screen, (202, 211, 228), dialogue_box.inflate(-10, -10))  # inner border
-            screen.blit(shopkeeperHeadshot, (screenWidth // 2 - 300, screenHeight * (4/5)))
+        dialogue_box = pygame.Rect(screenWidth // 2 - 300, screenHeight * (4/5) - 30, 600, 100)  # box dimensions
+        pygame.draw.rect(screen, (92, 95, 127), dialogue_box)
+        pygame.draw.rect(screen, (202, 211, 228), dialogue_box.inflate(-10, -10))  # inner border
+        screen.blit(shopkeeperHeadshot, (screenWidth // 2 - 300, screenHeight * (4/5) - 30))
 
-            # text animation
-            if text_index < len(dialogue_text):
-                 typing_counter += 1
-                 if typing_counter % typing_speed == 0:
-                      text_index += 1
-                      current_text = dialogue_text[:text_index]
+        # text animation
+        if text_index < len(dialogue_text):
+            typing_counter += 1
+            if typing_counter % typing_speed == 0:
+                text_index += 1
+                current_text = dialogue_text[:text_index]
             
-            text_surface = dialogueFont.render(current_text, True, (115, 98, 86))
-            screen.blit(text_surface, (dialogue_box.x + 130, dialogue_box.y + 35))
+        text_surface = dialogueFont.render(current_text, True, (115, 98, 86))
+        screen.blit(text_surface, (dialogue_box.x + 130, dialogue_box.y + 35))
+    
+      # draw buttons with hover effect
+        pygame.draw.rect(screen, buttonHover if yes_rect.collidepoint(mouse_pos) else buttonColor, yes_rect)
+        pygame.draw.rect(screen, buttonHover if no_rect.collidepoint(mouse_pos) else buttonColor, no_rect)
+
+        yes_text = dialogueFont.render("Yes", True, BLACK)
+        no_text = dialogueFont.render("No", True, BLACK)
+        screen.blit(yes_text, (yes_rect.x + 30, yes_rect.y + 10))
+        screen.blit(no_text, (no_rect.x + 30, no_rect.y + 10))
     
     # update display
     pygame.display.flip()
