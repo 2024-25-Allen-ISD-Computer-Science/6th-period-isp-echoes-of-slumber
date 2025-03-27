@@ -39,6 +39,12 @@ character_images = {
 mainSprite = character_images["idle"]
 mainRect = mainSprite.get_rect(topleft=(screenWidth/2 - 125, screenHeight/2 - 125))
 
+# character stats
+characterHealth = 3
+characterDamage = 1
+characterHealth_font = pygame.font.Font("januaryNight/januaryNight.ttf", 28)
+characterDamage_font = pygame.font.Font("januaryNight/januaryNight.ttf", 28)
+
 # dialogue setup
 dialogue_text = "Would you like to purchase something?"
 # holds what text is currently displayed
@@ -64,6 +70,12 @@ in_shop_menu = False
 shop_rect = pygame.Rect(screenWidth // 4, screenHeight // 4, screenWidth // 2, screenHeight // 2)
 close_shop_rect = pygame.Rect(screenWidth // 2 + 200, screenHeight // 2 + 110, 100, 50)
 
+# currency set up
+currency = 100 
+currency_font = pygame.font.Font("januaryNight/januaryNight.ttf", 28)
+healthCost = 10
+damageCost = 10
+
 # main loop
 clock = pygame.time.Clock()
 running = True
@@ -74,6 +86,15 @@ while running:
 
     # if in shop menu, display the shop menu screen
     if in_shop_menu:
+        currency_text = currency_font.render(f"Currency: {currency}", True, BLACK)
+        screen.blit(currency_text, (screenWidth - currency_text.get_width() - 20, 20))
+
+        health_text = characterHealth_font.render(f"Health: {characterHealth}", True, BLACK)
+        screen.blit(health_text, (20, 20))
+
+        attack_text = characterDamage_font.render(f"Attack: {characterDamage}", True, BLACK)
+        screen.blit(attack_text, (20, health_text.get_height() + 30))
+
         pygame.draw.rect(screen, (115, 98, 86), shop_rect.inflate(10, 10))
         pygame.draw.rect(screen, (200, 200, 255), shop_rect)
         shop_text = dialogueFont.render("The Shop", True, (0, 0, 0))
@@ -86,8 +107,8 @@ while running:
         pygame.draw.rect(screen, buttonColor, health_shop_rect)
         pygame.draw.rect(screen, buttonColor, damage_shop_rect)
 
-        health_shop_text = dialogueFont.render("+1 Health - 10 Dream Shards", True, BLACK)
-        damage_shop_text = dialogueFont.render("+1 Damage - 15 Dream Shards", True, BLACK)
+        health_shop_text = dialogueFont.render("+1 Health - " + str(healthCost) + " Dream Shards", True, BLACK)
+        damage_shop_text = dialogueFont.render("+1 Damage - " + str(damageCost) + " Dream Shards", True, BLACK)
         
         screen.blit(health_shop_text, (health_shop_rect.x + 10, health_shop_rect.y + 10))
         screen.blit(damage_shop_text, (damage_shop_rect.x + 10, damage_shop_rect.y + 10))
@@ -107,15 +128,25 @@ while running:
             pygame.draw.rect(screen, buttonHover, close_shop_rect)
             screen.blit(close_shop_text, (close_shop_rect.x + 20, close_shop_rect.y + 10))
         
-        # Handle clicks in shop menu
+        # handle clicks in shop menu
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if health_shop_rect.collidepoint(pygame.mouse.get_pos()):
-                    print("temp")
+                    if currency >= healthCost:  # check if the player has enough currency
+                        currency -= healthCost
+                        characterHealth += 1
+                        healthCost += 5
+                    else:
+                        print("Not enough currency!")
                 elif damage_shop_rect.collidepoint(pygame.mouse.get_pos()):
-                    print("temp")
+                    if currency >= damageCost:
+                        currency -= damageCost
+                        characterDamage += 1 
+                        damageCost += 5
+                    else:
+                        print("Not enough currency!")
                 elif close_shop_rect.collidepoint(pygame.mouse.get_pos()):
                     in_shop_menu = False
     else:
@@ -157,6 +188,18 @@ while running:
             #         text_index = 0
             #         typing_counter = 0
             # if right/left/up/down is clicked, character will move
+
+        # display currency in the top-right corner
+        currency_text = currency_font.render(f"Currency: {currency}", True, BLACK)
+        screen.blit(currency_text, (screenWidth - currency_text.get_width() - 20, 20))
+
+        # display health and dmg stats
+        health_text = characterHealth_font.render(f"Health: {characterHealth}", True, BLACK)
+        screen.blit(health_text, (20, 20))
+
+        attack_text = characterDamage_font.render(f"Attack: {characterDamage}", True, BLACK)
+        screen.blit(attack_text, (20, health_text.get_height() + 30))
+
         keys = pygame.key.get_pressed()
         moving = False
 
